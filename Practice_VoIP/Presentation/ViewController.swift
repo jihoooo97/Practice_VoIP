@@ -29,12 +29,18 @@ final class ViewController: BaseViewController {
     }()
     
     private let cxProvider = CXProvider(configuration: .init())
-    
+    private let cxCallController = CXCallController()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         initLayout()
+        
+        CXCallDirectoryManager.sharedInstance.reloadExtension(withIdentifier: "com.jiho.Practice-VoIP.CallDirectory") { error in
+            if let error {
+                print(error)
+            }
+        }
     }
 
     
@@ -69,7 +75,16 @@ final class ViewController: BaseViewController {
     
     @objc
     private func didTapCallingButton() {
-        print("calling action")
+        let handle = CXHandle(type: .emailAddress, value: "yyyy@naver.com")
+        
+        let startCallAction = CXStartCallAction(call: UUID(), handle: handle)
+        let transaction = CXTransaction(action: startCallAction)
+        
+        self.cxCallController.request(transaction) { error in
+            if let error {
+                print(error)
+            }
+        }
     }
 
 }
@@ -82,6 +97,10 @@ extension ViewController: CXProviderDelegate {
     }
     
     func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
+        action.fulfill()
+    }
+    
+    func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
         action.fulfill()
     }
     
