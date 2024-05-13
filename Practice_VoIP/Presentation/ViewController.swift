@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CallKit
 
 final class ViewController: BaseViewController {
 
@@ -26,6 +27,8 @@ final class ViewController: BaseViewController {
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
+    
+    private let cxProvider = CXProvider(configuration: .init())
     
     
     override func viewDidLoad() {
@@ -52,7 +55,16 @@ final class ViewController: BaseViewController {
     
     @objc
     private func didTapReceivingButton() {
-        print("receiving action")
+        cxProvider.setDelegate(self, queue: nil)
+        
+        let update = CXCallUpdate()
+        update.remoteHandle = .init(type: .generic, value: "Jiho9")
+        
+        cxProvider.reportNewIncomingCall(with: UUID(), update: update) { error in
+            if let error {
+                print(error)
+            }
+        }
     }
     
     @objc
@@ -62,3 +74,19 @@ final class ViewController: BaseViewController {
 
 }
 
+
+extension ViewController: CXProviderDelegate {
+
+    func providerDidReset(_ provider: CXProvider) {
+        
+    }
+    
+    func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
+        action.fulfill()
+    }
+    
+    func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
+        action.fulfill()
+    }
+    
+}
